@@ -1,5 +1,5 @@
 # DHCP-Enable-Disable-Netbios
-Script to enable or disable Netbios on DHCP servers ("Advanced" scopes options).
+Script to enable or disable Netbios on Windows DHCP servers ("Advanced" scopes options).
 
 - Get the complete list of DHCP servers in the domain
 - DHCP Server Selection
