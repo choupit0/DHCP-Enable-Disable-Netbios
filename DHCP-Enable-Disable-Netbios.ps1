@@ -33,8 +33,13 @@ $DHCPServersList
 $DHCPServer = Read-Host -Prompt "`nOn which DHCP server you want to proceed?`nPlease, specify the hostname (preferred) or IPv4 address"
 
 # We check that the server is reachable as well as the associated IPv4 address
-Write-Host -ForegroundColor Yellow "We are testing the network connectivity and retrieve the IPv4 address...`nSometimes, the DNS name does not corresponding to the IPv4 address."
-Test-Connection -ComputerName $DHCPServer -Count 4 | ft -AutoSize
+if ($DHCPServer -eq "") {
+    Write-Warning -Message "`nBad input: please, specify the hostname (preferred) or IPv4 address."
+    Break
+    } else {
+        Write-Host -ForegroundColor Yellow "We are testing the network connectivity and retrieve the IPv4 address...`nSometimes, the DNS name does not corresponding to the IPv4 address."
+        Test-Connection -ComputerName $DHCPServer -Count 4 | ft -AutoSize        
+}
 
 # Choice to enable or disable Netbios
 $NetbiosStatus = Read-Host -Prompt "`nDo you want Enable or Disable Netbios?`nPlease, answer by ENABLE or DISABLE"
@@ -70,14 +75,14 @@ $ScopesList = Get-DhcpServerv4Scope -ComputerName $DHCPServer
 # We loop on the scopes to make the change
 foreach ($Scope in $ScopesList) {
     if ($NetbiosStatus -eq "DISABLE") {
-        # On désactive Netbios
+        # Disable Netbios
         Set-DhcpServerv4OptionValue -ComputerName $DHCPServer -ScopeId "$($Scope.ScopeId)" -OptionId 001 -VendorClass "Microsoft Options" -Value 0x2
         Set-DhcpServerv4OptionValue -ComputerName $DHCPServer -ScopeId "$($Scope.ScopeId)" -OptionId 001 -VendorClass "Microsoft Windows 2000 Options" -Value 0x2
         Write-Host -ForegroundColor Gray "Netbios disabled on the scope: $($Scope.ScopeId)"
         Write-Host -ForegroundColor Yellow "Verification after the changes on the scope $($Scope.ScopeId):"
         Get-DhcpServerv4OptionValue -ComputerName $DHCPServer -ScopeId "$($Scope.ScopeId)" -All | ft -AutoSize
         } elseif ($NetbiosStatus -eq "ENABLE") {
-            # On active Netbios
+            # Enable Netbios
             Remove-DhcpServerv4OptionValue -ComputerName $DHCPServer -ScopeId "$($Scope.ScopeId)" -OptionId 001 -VendorClass "Microsoft Options"
             Remove-DhcpServerv4OptionValue -ComputerName $DHCPServer -ScopeId "$($Scope.ScopeId)" -OptionId 001 -VendorClass "Microsoft Windows 2000 Options"
             Write-Host -ForegroundColor Gray "Netbios (re)-enabled on the scope: $($Scope.ScopeId)"
